@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import https from "https";
 
 
 export async function GET() {
@@ -7,79 +6,73 @@ export async function GET() {
   try {
 
 
-    const apiUrl =
-      "https://Api.BrsApi.ir/Market/Gold_Currency_Pro.php?key=BbPkx4qWcjXR7t9uXNtFZjcujpRLd4MP&section=gold,currency";
+    const response = await fetch(
+      "https://Api.BrsApi.ir/Market/Gold_Currency_Pro.php?key=BbPkx4qWcjXR7t9uXNtFZjcujpRLd4MP&section=gold,currency",
+      {
+        cache: "no-store",
+      }
+    );
 
 
 
-    const agent =
-      new https.Agent({
-        rejectUnauthorized: false,
-      });
-
-
-
-    const response =
-      await fetch(apiUrl, {
-
-        // @ts-ignore
-        agent,
-
-        headers: {
-
-          "User-Agent":
-            "Mozilla/5.0",
-
-          "Accept":
-            "application/json",
-
-        },
-
-        cache:
-          "no-store",
-
-      });
-
-
-
-
-    const data =
-      await response.json();
-
+    const data = await response.json();
 
 
 
     const gold18 =
       data?.gold?.type?.find(
-        (item:any)=>
+        (item: {
+          symbol: string;
+          price: number;
+        }) =>
           item.symbol === "IR_GOLD_18K"
       );
 
 
 
+    if (!gold18) {
+
+      return NextResponse.json({
+
+        price: 0,
+
+        error: "Gold 18K not found"
+
+      });
+
+    }
+
 
 
     return NextResponse.json({
 
-      price:
-        gold18?.price ?? 0,
+      price: gold18.price,
+
+      name: gold18.name,
+
+      unit: gold18.unit,
+
+      time: gold18.time
 
     });
 
 
+  } catch(error) {
 
-  } catch(error:any) {
+
+    console.error(
+      "Gold API Error:",
+      error
+    );
 
 
     return NextResponse.json({
 
-      price:0,
+      price: 0,
 
-      error:
-        error.message,
+      error: "Gold API failed"
 
     });
-
 
   }
 

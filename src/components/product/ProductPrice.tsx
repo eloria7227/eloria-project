@@ -1,32 +1,43 @@
 "use client";
 
 import { useGoldPrice } from "@/hooks/useGoldPrice";
+import { calculateFinalPrice } from "@/lib/priceCalculator";
 
 interface ProductPriceProps {
   weight: number;
-  makingFee?: number;
-  stonePrice?: number;
+  makingPercent?: number;
+  profitPercent?: number;
+  taxPercent?: number;
+  designFee?: number;
 }
 
 export default function ProductPrice({
   weight,
-  makingFee = 0,
-  stonePrice = 0,
+  makingPercent = 10,
+  profitPercent = 7,
+  taxPercent = 9,
+  designFee = 0,
 }: ProductPriceProps) {
+
+
   const {
     goldPrice,
     loading,
   } = useGoldPrice();
 
-  const goldValue = weight * goldPrice;
 
-  const makingValue =
-    goldValue * (makingFee / 100);
 
-  const finalPrice =
-    goldValue +
-    makingValue +
-    stonePrice;
+  const calculation =
+    calculateFinalPrice(
+      weight,
+      goldPrice ?? 0,
+      makingPercent,
+      profitPercent,
+      taxPercent,
+      designFee
+    );
+
+
 
   return (
     <div
@@ -40,6 +51,7 @@ export default function ProductPrice({
         backdrop-blur-xl
       "
     >
+
       <h3
         className="
           mb-5
@@ -50,32 +62,93 @@ export default function ProductPrice({
         قیمت محصول
       </h3>
 
-      <div className="flex flex-col gap-4 text-white/80">
-        <div className="flex justify-between">
-          <span>وزن طلا</span>
 
-          <span>{weight} گرم</span>
-        </div>
+
+      <div
+        className="
+          flex
+          flex-col
+          gap-4
+          text-white/80
+        "
+      >
+
 
         <div className="flex justify-between">
-          <span>قیمت لحظه‌ای طلا</span>
+          <span>
+            وزن طلا
+          </span>
 
           <span>
-            {loading
-              ? "در حال دریافت..."
-              : `${goldPrice.toLocaleString()} تومان`}
+            {weight} گرم
           </span>
         </div>
 
-        <div className="flex justify-between">
-          <span>اجرت ساخت</span>
 
-          <span>{makingFee}٪</span>
+
+        <div className="flex justify-between">
+
+          <span>
+            قیمت لحظه‌ای طلا
+          </span>
+
+          <span>
+
+            {loading
+              ? "در حال دریافت..."
+              : `${(goldPrice ?? 0).toLocaleString()} تومان`
+            }
+
+          </span>
+
         </div>
+
+
+
+        <div className="flex justify-between">
+
+          <span>
+            اجرت ساخت
+          </span>
+
+          <span>
+            {makingPercent}٪
+          </span>
+
+        </div>
+
+
+
+        <div className="flex justify-between">
+
+          <span>
+            سود فروشنده
+          </span>
+
+          <span>
+            {profitPercent}٪
+          </span>
+
+        </div>
+
+
+
+        <div className="flex justify-between">
+
+          <span>
+            مالیات
+          </span>
+
+          <span>
+            {taxPercent}٪
+          </span>
+
+        </div>
+
+
 
         <div
           className="
-            mt-4
             flex
             justify-between
             border-t
@@ -84,13 +157,34 @@ export default function ProductPrice({
             text-lg
           "
         >
-          <span>قیمت نهایی</span>
 
-          <span className="text-[#C6A15B]">
-            {finalPrice.toLocaleString()} تومان
+          <span>
+            قیمت نهایی
           </span>
+
+
+          <span
+            className="
+              text-[#C6A15B]
+            "
+          >
+
+            {(
+              calculation.finalPrice ?? 0
+            ).toLocaleString()}
+
+            {" "}
+            تومان
+
+          </span>
+
+
         </div>
+
+
       </div>
+
+
     </div>
   );
 }

@@ -14,11 +14,9 @@ import { calculateFinalPrice } from "@/lib/priceCalculator";
 
 export default function CollectionPage() {
 
-
   const params = useParams();
 
   const slug = params.slug as string;
-
 
 
   const collection =
@@ -27,12 +25,10 @@ export default function CollectionPage() {
     );
 
 
-
   const collectionProducts =
     products.filter(
       (item) => item.collection === slug
     );
-
 
 
   const [goldPrice, setGoldPrice] =
@@ -42,21 +38,14 @@ export default function CollectionPage() {
 
   useEffect(() => {
 
-
     async function getGoldPrice() {
-
 
       try {
 
-
         const response =
-          await fetch(
-            "https://Api.BrsApi.ir/Market/Gold_Currency_Pro.php?key=BbPkx4qWcjXR7t9uXNtFZjcujpRLd4MP&section=gold,currency",
-            {
-              cache: "no-store",
-            }
-          );
-
+          await fetch("/api/gold", {
+            cache: "no-store",
+          });
 
 
         const data =
@@ -64,21 +53,16 @@ export default function CollectionPage() {
 
 
 
-        console.log(
-          "GOLD DATA:",
-          data
-        );
-
-
-
         const price =
+          data?.price ??
           data?.gold?.type?.find(
             (item: {
               symbol: string;
               price: number;
             }) =>
               item.symbol === "IR_GOLD_18K"
-          )?.price ?? 0;
+          )?.price ??
+          0;
 
 
 
@@ -87,28 +71,21 @@ export default function CollectionPage() {
         );
 
 
-
       } catch(error) {
-
 
         console.error(
           "Gold API Error:",
           error
         );
 
-
         setGoldPrice(0);
 
-
       }
-
 
     }
 
 
-
     getGoldPrice();
-
 
 
   }, []);
@@ -116,10 +93,7 @@ export default function CollectionPage() {
 
 
 
-
-
   if (!collection) {
-
 
     return (
 
@@ -140,9 +114,7 @@ export default function CollectionPage() {
 
     );
 
-
   }
-
 
 
 
@@ -157,9 +129,7 @@ export default function CollectionPage() {
       "
     >
 
-
       <Header />
-
 
 
       <section
@@ -186,7 +156,6 @@ export default function CollectionPage() {
 
 
 
-
         <div
           className="
           mt-14
@@ -197,31 +166,25 @@ export default function CollectionPage() {
         >
 
 
-
           {collectionProducts.map((product) => {
-
 
 
             const calculation =
               calculateFinalPrice(
 
-                product.goldWeight,
+                product.goldWeight ?? 0,
 
                 goldPrice,
 
-                product.makingPercent,
+                product.makingPercent ?? 0,
 
-                product.profitPercent,
+                product.profitPercent ?? 0,
 
-                product.taxPercent,
+                product.taxPercent ?? 0,
 
-                product.designFee,
-
-                product.stoneFee
+                product.designFee ?? 0
 
               );
-
-
 
 
 
@@ -237,7 +200,6 @@ export default function CollectionPage() {
                 p-6
                 "
               >
-
 
 
                 <div
@@ -260,8 +222,6 @@ export default function CollectionPage() {
 
 
 
-
-
                 <h2
                   className="
                   mt-6
@@ -276,8 +236,6 @@ export default function CollectionPage() {
 
 
 
-
-
                 <div
                   className="
                   mt-5
@@ -287,16 +245,13 @@ export default function CollectionPage() {
                 >
 
 
-
                   <p>
 
                     وزن طلا:
 
                     {" "}
 
-                    <span
-                      className="text-[#C6A15B]"
-                    >
+                    <span className="text-[#C6A15B]">
 
                       {product.goldWeight}
 
@@ -306,9 +261,24 @@ export default function CollectionPage() {
 
                     </span>
 
-
                   </p>
 
+
+
+
+                  <p>
+
+                    نوع طلا:
+
+                    {" "}
+
+                    <span className="text-[#C6A15B]">
+
+                      {product.goldType}
+
+                    </span>
+
+                  </p>
 
 
 
@@ -319,9 +289,7 @@ export default function CollectionPage() {
 
                     {" "}
 
-                    <span
-                      className="text-[#C6A15B]"
-                    >
+                    <span className="text-[#C6A15B]">
 
                       {goldPrice.toLocaleString()}
 
@@ -331,10 +299,7 @@ export default function CollectionPage() {
 
                     </span>
 
-
                   </p>
-
-
 
 
 
@@ -356,14 +321,10 @@ export default function CollectionPage() {
 
                     تومان
 
-
                   </p>
 
 
-
                 </div>
-
-
 
 
 
@@ -394,12 +355,10 @@ export default function CollectionPage() {
 
               </article>
 
-
             );
 
 
           })}
-
 
 
         </div>
@@ -410,8 +369,6 @@ export default function CollectionPage() {
 
     </main>
 
-
   );
-
 
 }
