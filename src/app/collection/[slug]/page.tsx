@@ -23,62 +23,123 @@ export default function CollectionPage() {
 
   const collection =
     collections.find(
-      item => item.id === slug
+      (item) => item.id === slug
     );
 
 
 
   const collectionProducts =
     products.filter(
-      item => item.collection === slug
+      (item) => item.collection === slug
     );
 
 
 
-
-  const [goldPrice,setGoldPrice] = useState(0);
-
-
-
-  useEffect(()=>{
-
-
-    fetch("/api/gold")
-
-      .then(res=>res.json())
-
-      .then(data=>{
-
-        setGoldPrice(data.price);
-
-      });
-
-
-  },[]);
+  const [goldPrice, setGoldPrice] =
+    useState<number>(0);
 
 
 
+  useEffect(() => {
 
 
-  if(!collection){
+    async function getGoldPrice() {
+
+
+      try {
+
+
+        const response =
+          await fetch(
+            "https://Api.BrsApi.ir/Market/Gold_Currency_Pro.php?key=BbPkx4qWcjXR7t9uXNtFZjcujpRLd4MP&section=gold,currency",
+            {
+              cache: "no-store",
+            }
+          );
+
+
+
+        const data =
+          await response.json();
+
+
+
+        console.log(
+          "GOLD DATA:",
+          data
+        );
+
+
+
+        const price =
+          data?.gold?.type?.find(
+            (item: {
+              symbol: string;
+              price: number;
+            }) =>
+              item.symbol === "IR_GOLD_18K"
+          )?.price ?? 0;
+
+
+
+        setGoldPrice(
+          Number(price)
+        );
+
+
+
+      } catch(error) {
+
+
+        console.error(
+          "Gold API Error:",
+          error
+        );
+
+
+        setGoldPrice(0);
+
+
+      }
+
+
+    }
+
+
+
+    getGoldPrice();
+
+
+
+  }, []);
+
+
+
+
+
+
+  if (!collection) {
 
 
     return (
 
-      <main className="
+      <main
+        className="
         min-h-screen
         bg-[#061B1A]
         text-white
         flex
         items-center
         justify-center
-      ">
+        "
+      >
 
         کالکشن پیدا نشد
 
       </main>
 
     );
+
 
   }
 
@@ -87,14 +148,14 @@ export default function CollectionPage() {
 
 
 
-
   return (
 
-
-    <main className="
+    <main
+      className="
       min-h-screen
       bg-[#061B1A]
-    ">
+      "
+    >
 
 
       <Header />
@@ -104,18 +165,19 @@ export default function CollectionPage() {
       <section
         dir="rtl"
         className="
-          px-8
-          pt-40
-          pb-24
+        px-8
+        pt-40
+        pb-24
         "
       >
 
 
-
-        <h1 className="
+        <h1
+          className="
           text-5xl
           text-white
-        ">
+          "
+        >
 
           {collection.title}
 
@@ -125,191 +187,219 @@ export default function CollectionPage() {
 
 
 
-        <div className="
+        <div
+          className="
           mt-14
           grid
           gap-10
           md:grid-cols-3
-        ">
+          "
+        >
 
 
-        {collectionProducts.map(product=>{
+
+          {collectionProducts.map((product) => {
 
 
-          const calculation =
-            calculateFinalPrice(
 
-              product.goldWeight,
+            const calculation =
+              calculateFinalPrice(
 
-              goldPrice,
+                product.goldWeight,
 
-              product.makingPercent,
+                goldPrice,
 
-              product.profitPercent,
+                product.makingPercent,
 
-              product.taxPercent,
+                product.profitPercent,
 
-              product.designFee,
+                product.taxPercent,
 
-              product.stoneFee
+                product.designFee,
+
+                product.stoneFee
+
+              );
+
+
+
+
+
+            return (
+
+              <article
+                key={product.id}
+                className="
+                rounded-[35px]
+                border
+                border-white/10
+                bg-white/[0.03]
+                p-6
+                "
+              >
+
+
+
+                <div
+                  className="
+                  h-[350px]
+                  rounded-[30px]
+                  border
+                  border-[#C6A15B]/20
+                  flex
+                  items-center
+                  justify-center
+                  text-[#C6A15B]
+                  text-5xl
+                  "
+                >
+
+                  ✦
+
+                </div>
+
+
+
+
+
+                <h2
+                  className="
+                  mt-6
+                  text-2xl
+                  text-white
+                  "
+                >
+
+                  {product.title}
+
+                </h2>
+
+
+
+
+
+                <div
+                  className="
+                  mt-5
+                  space-y-3
+                  text-white/70
+                  "
+                >
+
+
+
+                  <p>
+
+                    وزن طلا:
+
+                    {" "}
+
+                    <span
+                      className="text-[#C6A15B]"
+                    >
+
+                      {product.goldWeight}
+
+                      {" "}
+
+                      گرم
+
+                    </span>
+
+
+                  </p>
+
+
+
+
+
+                  <p>
+
+                    قیمت لحظه‌ای طلا:
+
+                    {" "}
+
+                    <span
+                      className="text-[#C6A15B]"
+                    >
+
+                      {goldPrice.toLocaleString()}
+
+                      {" "}
+
+                      تومان
+
+                    </span>
+
+
+                  </p>
+
+
+
+
+
+
+                  <p
+                    className="
+                    text-xl
+                    text-[#C6A15B]
+                    "
+                  >
+
+                    قیمت نهایی:
+
+                    {" "}
+
+                    {calculation.finalPrice.toLocaleString()}
+
+                    {" "}
+
+                    تومان
+
+
+                  </p>
+
+
+
+                </div>
+
+
+
+
+
+
+                <Link
+
+                  href={`/product/${product.id}`}
+
+                  className="
+                  block
+                  mt-6
+                  text-center
+                  rounded-full
+                  border
+                  border-[#C6A15B]
+                  py-3
+                  text-[#C6A15B]
+                  hover:bg-[#C6A15B]
+                  hover:text-[#061B1A]
+                  "
+                >
+
+                  مشاهده محصول
+
+                </Link>
+
+
+
+              </article>
+
 
             );
 
 
+          })}
 
-          return (
-
-          <article
-            key={product.id}
-            className="
-              rounded-[35px]
-              border
-              border-white/10
-              bg-white/[0.03]
-              p-6
-            "
-          >
-
-
-
-            {/* جای عکس */}
-
-            <div className="
-              h-[350px]
-              rounded-[30px]
-              border
-              border-[#C6A15B]/20
-              flex
-              items-center
-              justify-center
-              text-[#C6A15B]
-              text-5xl
-            ">
-
-              ✦
-
-            </div>
-
-
-
-
-
-            <h2 className="
-              mt-6
-              text-2xl
-              text-white
-            ">
-
-              {product.title}
-
-            </h2>
-
-
-
-
-
-            <div className="
-              mt-5
-              space-y-3
-              text-white/70
-            ">
-
-
-              <p>
-
-                وزن طلا:
-                {" "}
-                <span className="text-[#C6A15B]">
-
-                  {product.goldWeight}
-                  {" "}
-                  گرم
-
-                </span>
-
-              </p>
-
-
-
-
-
-              <p>
-
-                قیمت لحظه‌ای طلا:
-                {" "}
-
-                <span className="text-[#C6A15B]">
-
-                  {goldPrice.toLocaleString()}
-                  {" "}
-                  تومان
-
-                </span>
-
-
-              </p>
-
-
-
-
-
-
-              <p className="
-                text-xl
-                text-[#C6A15B]
-              ">
-
-                قیمت نهایی:
-
-                {" "}
-
-                {calculation.finalPrice.toLocaleString()}
-
-                {" "}
-                تومان
-
-
-              </p>
-
-
-            </div>
-
-
-
-
-
-
-
-            <Link
-
-              href={`/product/${product.id}`}
-
-              className="
-                block
-                mt-6
-                text-center
-                rounded-full
-                border
-                border-[#C6A15B]
-                py-3
-                text-[#C6A15B]
-                hover:bg-[#C6A15B]
-                hover:text-[#061B1A]
-              "
-            >
-
-              مشاهده محصول
-
-            </Link>
-
-
-
-          </article>
-
-          );
-
-
-        })}
 
 
         </div>
@@ -322,5 +412,6 @@ export default function CollectionPage() {
 
 
   );
+
 
 }
