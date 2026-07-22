@@ -9,28 +9,54 @@ import {
 } from "react";
 
 
+
 export type CartProduct = {
 
-  id:string;
-  title:string;
-  price:string;
-  image:string;
+  id: string;
+
+  title: string;
+
+  image: string;
+
+
+  // قیمت نهایی همیشه عدد
+
+  price: number;
+
+
+  goldWeight: number;
+
+  goldType: string;
+
+  stoneType: string;
+
+  description: string;
+
+  story: string;
 
 };
+
+
 
 
 
 type CartContextType = {
 
-  cart:CartProduct[];
+  cart: CartProduct[];
 
-  addToCart:(product:CartProduct)=>void;
+  addToCart:
+  (product: CartProduct)=>void;
 
-  removeFromCart:(id:string)=>void;
+  removeFromCart:
+  (id:string)=>void;
 
-  clearCart:()=>void;
+  clearCart:
+  ()=>void;
 
 };
+
+
+
 
 
 
@@ -39,10 +65,17 @@ createContext<CartContextType | undefined>(undefined);
 
 
 
+
+
+
 export function CartProvider({
-  children
+
+children
+
 }:{
-  children:ReactNode
+
+children:ReactNode
+
 }){
 
 
@@ -51,20 +84,63 @@ export function CartProvider({
 
 
 
-  // Load cart
+
+
+  // دریافت سبد ذخیره شده
 
   useEffect(()=>{
 
 
-    const savedCart =
-    localStorage.getItem("eloria-cart");
+    const saved =
+    localStorage.getItem(
+      "eloria-cart"
+    );
 
 
-    if(savedCart){
 
-      setCart(
-        JSON.parse(savedCart)
-      );
+    if(saved){
+
+
+      try{
+
+
+        const data =
+        JSON.parse(saved);
+
+
+
+        // تبدیل قیمت‌های قدیمی به عدد
+
+        const fixed =
+        data.map((item:any)=>({
+
+
+          ...item,
+
+
+          price:
+          Number(
+            String(item.price)
+            .replace(/,/g,"")
+          )
+
+
+        }));
+
+
+
+        setCart(fixed);
+
+
+
+      }catch{
+
+
+        setCart([]);
+
+
+      }
+
 
     }
 
@@ -74,18 +150,30 @@ export function CartProvider({
 
 
 
-  // Save cart
+
+
+
+
+
+  // ذخیره سبد
 
   useEffect(()=>{
 
 
     localStorage.setItem(
+
       "eloria-cart",
+
       JSON.stringify(cart)
+
     );
 
 
   },[cart]);
+
+
+
+
 
 
 
@@ -99,7 +187,10 @@ export function CartProvider({
 
       const exists =
       prev.some(
-        item=>item.id===product.id
+
+        item =>
+        item.id === product.id
+
       );
 
 
@@ -116,15 +207,27 @@ export function CartProvider({
 
         ...prev,
 
-        product
+        {
+
+          ...product,
+
+          price:Number(product.price)
+
+        }
 
       ];
+
 
 
     });
 
 
+
   }
+
+
+
+
 
 
 
@@ -136,7 +239,10 @@ export function CartProvider({
     setCart(prev=>
 
       prev.filter(
-        item=>item.id!==id
+
+        item =>
+        item.id !== id
+
       )
 
     );
@@ -148,13 +254,24 @@ export function CartProvider({
 
 
 
+
+
+
   function clearCart(){
 
 
     setCart([]);
 
 
+    localStorage.removeItem(
+      "eloria-cart"
+    );
+
+
   }
+
+
+
 
 
 
@@ -180,11 +297,15 @@ export function CartProvider({
 
       {children}
 
+
     </CartContext.Provider>
 
   );
 
 }
+
+
+
 
 
 
@@ -200,9 +321,11 @@ export function useCart(){
 
   if(!context){
 
+
     throw new Error(
       "useCart must be inside CartProvider"
     );
+
 
   }
 

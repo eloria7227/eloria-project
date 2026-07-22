@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
@@ -9,28 +8,31 @@ import Header from "@/components/layout/Header";
 import { collections } from "@/data/collections";
 
 
-
-export default function WorldPage(){
+export default function WorldPage() {
 
 
   const lightRef = useRef<HTMLDivElement>(null);
 
 
 
-  useEffect(()=>{
+  useEffect(() => {
 
     const light = lightRef.current;
 
-    if(!light) return;
+    if (!light) return;
 
 
-    const move = (e:MouseEvent)=>{
+    const move = (e: MouseEvent) => {
 
-      gsap.to(light,{
-        x:e.clientX-250,
-        y:e.clientY-250,
-        duration:.8,
-        ease:"power3.out"
+      gsap.to(light, {
+
+        x: e.clientX - 250,
+        y: e.clientY - 250,
+
+        duration: .8,
+
+        ease: "power3.out"
+
       });
 
     };
@@ -42,7 +44,7 @@ export default function WorldPage(){
     );
 
 
-    return()=>{
+    return () => {
 
       window.removeEventListener(
         "mousemove",
@@ -52,7 +54,7 @@ export default function WorldPage(){
     };
 
 
-  },[]);
+  }, []);
 
 
 
@@ -68,10 +70,13 @@ export default function WorldPage(){
     >
 
 
+
       {/* Mouse Glow */}
 
       <div
+
         ref={lightRef}
+
         className="
           pointer-events-none
           fixed
@@ -84,7 +89,9 @@ export default function WorldPage(){
           bg-[#C6A15B]/15
           blur-[160px]
         "
+
       />
+
 
 
 
@@ -92,7 +99,10 @@ export default function WorldPage(){
 
 
 
+
+
       <section
+
         className="
           relative
           z-10
@@ -100,160 +110,273 @@ export default function WorldPage(){
           pt-40
           pb-24
         "
+
       >
 
 
+
         <div
+
           className="
             grid
             gap-10
             md:grid-cols-3
           "
+
         >
 
 
-          {collections.map((item)=>(
+
+          {
+            collections.map((item)=>(
 
 
-            <article
-              key={item.id}
-              className="
-                group
-                relative
-                h-[620px]
-                overflow-hidden
-                rounded-[35px]
-                border
-                border-white/10
-              "
-            >
 
+              <article
 
-              <Image
-                src={item.image}
-                alt={item.title}
-                fill
+                key={item.id}
+
                 className="
-                  object-cover
+                  group
+                  relative
+                  h-[620px]
+                  overflow-hidden
+                  rounded-[35px]
+                  border
+                  border-white/10
+                  bg-white/[0.03]
                   transition
-                  duration-1000
-                  group-hover:scale-110
+                  duration-700
+                  hover:-translate-y-3
                 "
-              />
 
-
-
-              <div
-                className="
-                  absolute
-                  inset-0
-                  bg-gradient-to-t
-                  from-[#061B1A]
-                  via-[#061B1A]/40
-                  to-transparent
-                "
-              />
-
-
-
-
-              <div
-                className="
-                  absolute
-                  bottom-10
-                  left-8
-                  right-8
-                  text-right
-                "
-                dir="rtl"
               >
 
 
-                <h2
-                  className="
-                    text-4xl
-                    text-white
-                  "
-                >
-                  {item.title}
-                </h2>
 
 
 
-                <p
-                  className="
-                    mt-3
-                    text-sm
-                    leading-8
-                    text-white/70
-                  "
-                >
-                  {item.description}
-                </p>
-
-
+                {/* Empty Image Area */}
 
                 <div
+
                   className="
-                    mt-5
+                    absolute
+                    inset-0
                     flex
                     items-center
-                    justify-between
+                    justify-center
+                    bg-white/[0.02]
                   "
+
                 >
 
-                  <span
+
+
+                  <div
+
                     className="
-                      text-sm
-                      text-[#C6A15B]
-                    "
-                  >
-                    {item.count}
-                  </span>
-
-
-
-                  <Link
-                    href={`/collection/${item.id}`}
-                    className="
+                      h-40
+                      w-40
                       rounded-full
                       border
-                      border-[#C6A15B]
-                      px-7
-                      py-3
-                      text-sm
+                      border-[#C6A15B]/30
+                      flex
+                      items-center
+                      justify-center
+                      text-5xl
                       text-[#C6A15B]
                       transition
-                      duration-500
-                      hover:bg-[#C6A15B]
-                      hover:text-[#061B1A]
+                      duration-700
+                      group-hover:scale-110
+                      group-hover:border-[#C6A15B]
                     "
+
                   >
-                    مشاهده کالکشن
-                  </Link>
+
+                    ✦
+
+
+                  </div>
+
 
 
                 </div>
 
 
 
-              </div>
 
 
 
-            </article>
+                {/* Gradient */}
+
+                <div
+
+                  className="
+                    absolute
+                    inset-0
+                    bg-gradient-to-t
+                    from-[#061B1A]
+                    via-[#061B1A]/60
+                    to-transparent
+                  "
+
+                />
 
 
-          ))}
+
+
+
+
+
+                <div
+
+                  className="
+                    absolute
+                    bottom-10
+                    left-8
+                    right-8
+                    text-right
+                  "
+
+                  dir="rtl"
+
+                >
+
+
+
+
+                  <h2
+
+                    className="
+                      text-4xl
+                      text-white
+                    "
+
+                  >
+
+                    {item.title}
+
+
+                  </h2>
+
+
+
+
+
+                  <p
+
+                    className="
+                      mt-4
+                      leading-8
+                      text-white/60
+                    "
+
+                  >
+
+                    {item.description}
+
+
+                  </p>
+
+
+
+
+
+
+                  <div
+
+                    className="
+                      mt-6
+                      flex
+                      items-center
+                      justify-between
+                    "
+
+                  >
+
+
+
+
+                    <span
+
+                      className="
+                        text-sm
+                        text-[#C6A15B]
+                      "
+
+                    >
+
+                      {item.count}
+
+
+                    </span>
+
+
+
+
+
+
+                    <Link
+
+                      href={`/collection/${item.id}`}
+
+                      className="
+                        rounded-full
+                        border
+                        border-[#C6A15B]
+                        px-7
+                        py-3
+                        text-sm
+                        text-[#C6A15B]
+                        transition
+                        duration-500
+                        hover:bg-[#C6A15B]
+                        hover:text-[#061B1A]
+                      "
+
+                    >
+
+                      مشاهده کالکشن
+
+
+                    </Link>
+
+
+
+
+                  </div>
+
+
+
+
+
+                </div>
+
+
+
+
+              </article>
+
+
+
+            ))
+          }
+
+
 
 
         </div>
 
 
+
       </section>
 
 
+
+
     </main>
+
 
   );
 
