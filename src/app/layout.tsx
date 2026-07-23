@@ -6,10 +6,10 @@ import { CartProvider } from "@/context/CartContext";
 
 export const metadata: Metadata = {
 
-  title:"Eloria",
+  title: "Eloria",
 
   description:
-  "دنیای هنر دست الوریا",
+    "جواهرات دست‌ساز الوریا",
 
 };
 
@@ -17,36 +17,35 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
 
-children,
+  children,
 
 }: Readonly<{
 
-children: React.ReactNode;
+  children: React.ReactNode;
 
 }>) {
 
 
-return (
+  return (
 
-<html lang="fa" dir="rtl">
-
-
-<body>
+    <html lang="fa" dir="rtl">
 
 
-<CartProvider>
-
-{children}
-
-</CartProvider>
+      <body>
 
 
-</body>
+        <CartProvider>
+
+          {children}
+
+        </CartProvider>
 
 
-</html>
+      </body>
 
-);
 
+    </html>
+
+  );
 
 }

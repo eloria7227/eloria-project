@@ -2,69 +2,101 @@
 
 import { useEffect, useState } from "react";
 
-interface GoldPriceState {
-  goldPrice: number;
-  loading: boolean;
-  error: string | null;
-}
 
-export function useGoldPrice(): GoldPriceState {
-  const [goldPrice, setGoldPrice] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function useGoldPrice() {
+
+  const [goldPrice, setGoldPrice] =
+    useState<number>(0);
+
+
+  const [loading, setLoading] =
+    useState<boolean>(true);
+
+
 
   useEffect(() => {
+
+
     async function fetchGoldPrice() {
+
+
       try {
-        setLoading(true);
 
-        const response = await fetch("/api/gold", {
-          cache: "no-store",
-        });
 
-        if (!response.ok) {
-          throw new Error("خطا در دریافت قیمت طلا");
-        }
+        const response =
+          await fetch("/api/gold", {
+            cache: "no-store",
+          });
 
-        const data = await response.json();
 
-        const gold18 = data?.gold?.type?.find(
-          (item: {
-            symbol: string;
-            price: number;
-          }) => item.symbol === "IR_GOLD_18K"
+
+        const data =
+          await response.json();
+
+
+
+
+        const price =
+          data?.price ??
+          data?.gold?.type?.find(
+            (item: {
+              symbol: string;
+              price: number;
+            }) =>
+              item.symbol === "IR_GOLD_18K"
+          )?.price ??
+          0;
+
+
+
+        setGoldPrice(
+          Number(price)
         );
 
-        if (!gold18) {
-          throw new Error("قیمت طلای ۱۸ عیار پیدا نشد");
-        }
 
-        setGoldPrice(gold18.price);
 
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "خطای ناشناخته"
+      } catch (error) {
+
+
+        console.error(
+          "Gold price error:",
+          error
         );
+
+
+        setGoldPrice(0);
+
+
+
       } finally {
+
+
         setLoading(false);
+
+
       }
+
+
     }
+
+
 
     fetchGoldPrice();
 
-    const interval = setInterval(
-      fetchGoldPrice,
-      5 * 60 * 1000
-    );
 
-    return () => clearInterval(interval);
+
   }, []);
 
+
+
+
   return {
+
     goldPrice,
+
     loading,
-    error,
+
   };
+
+
 }

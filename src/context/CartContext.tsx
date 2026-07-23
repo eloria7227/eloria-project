@@ -5,12 +5,13 @@ import {
   useContext,
   useEffect,
   useState,
-  ReactNode
+  ReactNode,
 } from "react";
 
 
 
-export type CartProduct = {
+export interface CartItem {
+
 
   id: string;
 
@@ -18,42 +19,64 @@ export type CartProduct = {
 
   image: string;
 
-
-  // قیمت نهایی همیشه عدد
-
-  price: number;
-
-
   goldWeight: number;
 
   goldType: string;
 
   stoneType: string;
 
-  description: string;
+  price: number;
 
-  story: string;
-
-};
+  quantity: number;
 
 
+  makingPercent: number;
+
+  profitPercent: number;
+
+  taxPercent: number;
+
+  designFee: number;
+
+
+  goldPriceAtAdd: number;
+
+
+}
 
 
 
-type CartContextType = {
 
-  cart: CartProduct[];
 
-  addToCart:
-  (product: CartProduct)=>void;
 
-  removeFromCart:
-  (id:string)=>void;
 
-  clearCart:
-  ()=>void;
+interface CartContextType {
 
-};
+
+  cart: CartItem[];
+
+
+  addToCart: (item: CartItem) => void;
+
+
+  removeFromCart: (id: string) => void;
+
+
+  increaseQuantity: (id: string) => void;
+
+
+  decreaseQuantity: (id: string) => void;
+
+
+  updateGoldPrice: (goldPrice: number) => void;
+
+
+  clearCart: () => void;
+
+
+
+}
+
 
 
 
@@ -61,7 +84,11 @@ type CartContextType = {
 
 
 const CartContext =
-createContext<CartContextType | undefined>(undefined);
+
+  createContext<CartContextType | undefined>(undefined);
+
+
+
 
 
 
@@ -70,82 +97,66 @@ createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({
 
-children
+  children,
 
-}:{
+}: {
 
-children:ReactNode
+  children: ReactNode;
 
-}){
-
-
-  const [cart,setCart] =
-  useState<CartProduct[]>([]);
+}) {
 
 
 
+  const [cart, setCart] = useState<CartItem[]>([]);
 
 
-  // دریافت سبد ذخیره شده
-
-  useEffect(()=>{
-
-
-    const saved =
-    localStorage.getItem(
-      "eloria-cart"
-    );
+  const [loaded, setLoaded] = useState(false);
 
 
 
-    if(saved){
-
-
-      try{
-
-
-        const data =
-        JSON.parse(saved);
 
 
 
-        // تبدیل قیمت‌های قدیمی به عدد
 
-        const fixed =
-        data.map((item:any)=>({
-
-
-          ...item,
-
-
-          price:
-          Number(
-            String(item.price)
-            .replace(/,/g,"")
-          )
-
-
-        }));
+  useEffect(() => {
 
 
 
-        setCart(fixed);
+    const savedCart =
+
+      localStorage.getItem(
+
+        "eloria-cart"
+
+      );
 
 
 
-      }catch{
 
 
-        setCart([]);
+    if (savedCart) {
 
 
-      }
+
+      setCart(
+
+        JSON.parse(savedCart)
+
+      );
+
 
 
     }
 
 
-  },[]);
+
+
+
+    setLoaded(true);
+
+
+
+  }, []);
 
 
 
@@ -155,9 +166,16 @@ children:ReactNode
 
 
 
-  // ذخیره سبد
+  useEffect(() => {
 
-  useEffect(()=>{
+
+
+    if (!loaded)
+
+      return;
+
+
+
 
 
     localStorage.setItem(
@@ -169,7 +187,14 @@ children:ReactNode
     );
 
 
-  },[cart]);
+
+  }, [
+
+    cart,
+
+    loaded
+
+  ]);
 
 
 
@@ -179,27 +204,70 @@ children:ReactNode
 
 
 
-  function addToCart(product:CartProduct){
+  function addToCart(item: CartItem) {
 
 
-    setCart(prev=>{
+
+    setCart((prev) => {
 
 
-      const exists =
-      prev.some(
 
-        item =>
-        item.id === product.id
+      const existing = prev.find(
+
+        (product) =>
+
+          product.id === item.id
 
       );
 
 
 
-      if(exists){
 
-        return prev;
+
+
+      if (existing) {
+
+
+
+        return prev.map((product) =>
+
+
+
+          product.id === item.id
+
+            ? {
+
+
+                ...product,
+
+
+                quantity:
+
+                  product.quantity + 1,
+
+
+                goldPriceAtAdd:
+
+                  item.goldPriceAtAdd,
+
+
+              }
+
+
+            : product
+
+
+
+        );
+
+
 
       }
+
+
+
+
+
 
 
 
@@ -207,13 +275,7 @@ children:ReactNode
 
         ...prev,
 
-        {
-
-          ...product,
-
-          price:Number(product.price)
-
-        }
+        item
 
       ];
 
@@ -233,19 +295,26 @@ children:ReactNode
 
 
 
-  function removeFromCart(id:string){
+  function removeFromCart(id: string) {
 
 
-    setCart(prev=>
+
+    setCart((prev) =>
+
+
 
       prev.filter(
 
-        item =>
-        item.id !== id
+        (item) =>
+
+          item.id !== id
 
       )
 
+
+
     );
+
 
 
   }
@@ -257,18 +326,166 @@ children:ReactNode
 
 
 
-  function clearCart(){
+
+  function increaseQuantity(id: string) {
+
+
+
+    setCart((prev) =>
+
+
+
+      prev.map((item) =>
+
+
+
+        item.id === id
+
+          ? {
+
+
+              ...item,
+
+
+              quantity:
+
+                item.quantity + 1,
+
+
+            }
+
+
+          : item
+
+
+
+      )
+
+
+
+    );
+
+
+
+  }
+
+
+
+
+
+
+
+
+
+  function decreaseQuantity(id: string) {
+
+
+
+    setCart((prev) =>
+
+
+
+      prev.map((item) => {
+
+
+
+        if (item.id !== id)
+
+          return item;
+
+
+
+
+
+        if (item.quantity <= 1)
+
+          return item;
+
+
+
+
+
+        return {
+
+
+          ...item,
+
+
+          quantity:
+
+            item.quantity - 1,
+
+
+        };
+
+
+
+      })
+
+
+
+    );
+
+
+
+  }
+
+
+
+
+
+
+
+
+
+  function updateGoldPrice(goldPrice: number) {
+
+
+
+    setCart((prev) =>
+
+
+
+      prev.map((item) => ({
+
+
+
+        ...item,
+
+
+
+        goldPriceAtAdd:
+
+          goldPrice,
+
+
+
+      }))
+
+
+
+    );
+
+
+
+  }
+
+
+
+
+
+
+
+
+
+  function clearCart() {
 
 
     setCart([]);
 
 
-    localStorage.removeItem(
-      "eloria-cart"
-    );
-
-
   }
+
 
 
 
@@ -279,26 +496,53 @@ children:ReactNode
 
   return (
 
+
+
     <CartContext.Provider
+
+
 
       value={{
 
+
+
         cart,
+
 
         addToCart,
 
+
         removeFromCart,
 
-        clearCart
+
+        increaseQuantity,
+
+
+        decreaseQuantity,
+
+
+        updateGoldPrice,
+
+
+        clearCart,
+
+
 
       }}
 
+
+
     >
+
+
 
       {children}
 
 
+
     </CartContext.Provider>
+
+
 
   );
 
@@ -311,27 +555,37 @@ children:ReactNode
 
 
 
-export function useCart(){
 
-
-  const context =
-  useContext(CartContext);
+export function useCart() {
 
 
 
-  if(!context){
+  const context = useContext(CartContext);
+
+
+
+
+
+  if (!context) {
+
 
 
     throw new Error(
+
       "useCart must be inside CartProvider"
+
     );
+
 
 
   }
 
 
 
+
+
   return context;
+
 
 
 }

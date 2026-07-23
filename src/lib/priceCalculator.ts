@@ -1,68 +1,162 @@
-export function calculateFinalPrice(
-  weight: number,
-  goldPrice: number,
-  makingPercent: number = 10,
-  profitPercent: number = 7,
-  taxPercent: number = 9,
-  designFee: number = 0
-) {
+export interface PriceResult {
 
+  goldValue: number;
+
+  makingPrice: number;
+
+  profitPrice: number;
+
+  taxPrice: number;
+
+  designFee: number;
+
+  finalPrice: number;
+
+}
+
+
+
+
+
+
+
+export function calculateFinalPrice(
+
+  goldWeight: number,
+
+  goldPrice: number,
+
+  makingPercent: number = 10,
+
+  profitPercent: number = 7,
+
+  taxPercent: number = 9,
+
+  designFee: number = 0
+
+): PriceResult {
+
+
+
+
+  // ارزش طلای خام
 
   const goldValue =
-    weight * goldPrice;
+
+    goldWeight *
+
+    goldPrice;
 
 
 
-  const making =
-    goldValue * (makingPercent / 100);
 
 
 
-  const profitBase =
-    goldValue + making;
+
+  // اجرت ساخت
+
+  const makingPrice =
+
+    goldValue *
+
+    (makingPercent / 100);
 
 
 
-  const profit =
-    profitBase * (profitPercent / 100);
 
 
 
-  const taxBase =
-    goldValue +
-    making +
-    profit;
+
+
+  // سود فروشنده
+
+  const profitPrice =
+
+    (
+
+      goldValue +
+
+      makingPrice
+
+    )
+
+    *
+
+    (profitPercent / 100);
 
 
 
-  const tax =
-    taxBase * (taxPercent / 100);
 
 
+
+
+
+
+  // مالیات
+
+  const taxPrice =
+
+    (
+
+      makingPrice +
+
+      profitPrice
+
+    )
+
+    *
+
+    (taxPercent / 100);
+
+
+
+
+
+
+
+
+  // قیمت نهایی
 
   const finalPrice =
+
     goldValue +
-    making +
-    profit +
-    tax +
+
+    makingPrice +
+
+    profitPrice +
+
+    taxPrice +
+
     designFee;
+
+
+
+
 
 
 
   return {
 
+
     goldValue,
 
-    making,
 
-    profit,
+    makingPrice,
 
-    tax,
+
+    profitPrice,
+
+
+    taxPrice,
+
 
     designFee,
 
-    finalPrice
+
+    finalPrice,
+
 
   };
+
 
 }
