@@ -8,123 +8,82 @@ datasource db {
 }
 
 model Category {
-  id   String @id @default(cuid())
-  name String
-  slug String @unique
-
-  products Product[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
 }
 
 model Product {
-  id String @id @default(cuid())
-
-  name        String
-  slug        String @unique
-  description String @db.Text
-
-  image String
-
-  goldWeight Float
-  goldType   String
-
-  gemstone String?
-  stock    Int     @default(1)
-
-  basePrice Float
-
-  isActive Boolean @default(true)
-
-  makingPercent Float @default(0)
-  profitPercent Float @default(0)
-  taxPercent    Float @default(0)
-
-  categoryId String
-
-  category Category @relation(fields: [categoryId], references: [id])
-
-  orderItems OrderItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String      @id @default(cuid())
+  name          String
+  slug          String      @unique
+  description   String
+  image         String
+  goldWeight    Float
+  goldType      String
+  gemstone      String?
+  stock         Int         @default(1)
+  categoryId    String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  basePrice     Float
+  isActive      Boolean     @default(true)
+  makingPercent Float       @default(0)
+  profitPercent Float       @default(0)
+  taxPercent    Float       @default(0)
+  orderItems    OrderItem[]
+  category      Category    @relation(fields: [categoryId], references: [id])
 
   @@index([categoryId])
 }
 
 model GoldPrice {
-  id String @id @default(cuid())
-
+  id           String   @id @default(cuid())
   pricePerGram Float
-
-  type String @default("GOLD")
-
-  createdAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  type         String   @default("GOLD")
 }
 
 model Customer {
-  id String @id @default(cuid())
-
-  name String
-
-  phone String @unique
-
-  email String?
-
-  address String?
-
-  orders Order[]
-
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  email     String?
+  address   String?
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
+  orders    Order[]
 }
 
 model Order {
-  id String @id @default(cuid())
-
-  customerId String
-
-  totalPrice Float
-
-  orderStatus String @default("PENDING")
-
+  id               String      @id @default(cuid())
+  totalPrice       Float
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  customerId       String
+  orderStatus      String      @default("PENDING")
   paymentAuthority String?
-
-  paymentRefId String?
-
-  paymentStatus String @default("UNPAID")
-
-  customer Customer @relation(fields: [customerId], references: [id])
-
-  items OrderItem[]
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
+  paymentRefId     String?
+  paymentStatus    String      @default("UNPAID")
+  customer         Customer    @relation(fields: [customerId], references: [id])
+  items            OrderItem[]
 
   @@index([customerId])
 }
 
 model OrderItem {
-  id String @id @default(cuid())
-
-  orderId String
-
-  productId String
-
-  quantity Int @default(1)
-
+  id                  String   @id @default(cuid())
+  quantity            Int      @default(1)
+  orderId             String
+  productId           String
+  createdAt           DateTime @default(now())
   goldPriceAtPurchase Float
-
-  priceAtPurchase Float
-
-  order Order @relation(fields: [orderId], references: [id])
-
-  product Product @relation(fields: [productId], references: [id])
-
-  createdAt DateTime @default(now())
+  priceAtPurchase     Float
+  order               Order    @relation(fields: [orderId], references: [id])
+  product             Product  @relation(fields: [productId], references: [id])
 
   @@index([orderId])
   @@index([productId])
