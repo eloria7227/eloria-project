@@ -12,6 +12,7 @@ import FeaturedButton from "./FeaturedButton";
 interface FeaturedCardProps {
   product: {
     id: string;
+    slug: string;
     title: string;
     image: string;
     description: string;
@@ -76,7 +77,6 @@ export default function FeaturedCard({
       />
 
       <div className="relative z-10 space-y-6 p-7">
-
         <FeaturedInfo
           title={product.title}
           description={product.description}
@@ -97,11 +97,9 @@ export default function FeaturedCard({
         />
 
         <FeaturedButton
-          id={product.id}
+          slug={product.slug}
         />
-
       </div>
-
     </motion.article>
   );
 }

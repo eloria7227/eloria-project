@@ -1,19 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import Header from "@/components/layout/Header";
 import { useCart } from "@/context/CartContext";
-import { calculateGoldPrice } from "@/lib/goldCalculator";
+import { calculateFinalPrice } from "@/lib/priceCalculator";
 
-export default function CheckoutPage() {
+export default function CheckoutClient() {
   const router = useRouter();
 
   const {
     cart,
     clearCart,
+    updateGoldPrice,
   } = useCart();
+
 
   const [goldPrice, setGoldPrice] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -22,13 +25,15 @@ export default function CheckoutPage() {
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [postalCode, setPostalCode] = useState("");
 
   const [sending, setSending] = useState(false);
 
 
+
   async function getGoldPrice() {
+
     try {
+
       const response = await fetch(
         "/api/gold",
         {
@@ -36,15 +41,26 @@ export default function CheckoutPage() {
         }
       );
 
+
       const data = await response.json();
 
+
       if (data.success) {
-        setGoldPrice(
-          Number(data.price)
-        );
+
+        const currentPrice =
+          Number(data.price);
+
+
+        setGoldPrice(currentPrice);
+
+
+        updateGoldPrice(currentPrice);
+
+
       }
 
-    } catch (error) {
+
+    } catch(error) {
 
       console.error(
         "Gold price error",
@@ -56,7 +72,11 @@ export default function CheckoutPage() {
       setLoading(false);
 
     }
+
   }
+
+
+
 
 
   useEffect(() => {
@@ -67,31 +87,50 @@ export default function CheckoutPage() {
 
 
 
+
+
+
+
   useEffect(() => {
 
-    if (
+
+    if(
       !goldPrice ||
       cart.length === 0
     ) {
+
       return;
+
     }
 
 
+
     const changed =
-      cart.some((item) =>
-        Math.abs(
+      cart.some((item) => {
+
+
+        return Math.abs(
           item.goldPriceAtAdd - goldPrice
-        ) > 1000
-      );
+        ) > 1000;
+
+
+      });
+
 
 
     setPriceChanged(changed);
+
 
 
   }, [
     goldPrice,
     cart,
   ]);
+
+
+
+
+
 
 
 
@@ -102,27 +141,23 @@ export default function CheckoutPage() {
         item
       ) => {
 
-        const result =
-          calculateGoldPrice({
 
-            goldWeight:
-              item.goldWeight,
+        const result =
+          calculateFinalPrice(
+
+            item.goldWeight,
 
             goldPrice,
 
-            makingPercent:
-              item.makingPercent,
+            item.makingPercent,
 
-            profitPercent:
-              item.profitPercent,
+            item.profitPercent,
 
-            taxPercent:
-              item.taxPercent,
+            item.taxPercent,
 
-            weavingFee:
-              item.designFee,
+            item.designFee
 
-          });
+          );
 
 
         return (
@@ -131,24 +166,52 @@ export default function CheckoutPage() {
           item.quantity
         );
 
+
       },
       0
     );
 
 
 
+
+
+
+
+
+  const totalQuantity =
+    cart.reduce(
+      (
+        total,
+        item
+      ) =>
+        total + item.quantity,
+
+      0
+    );
+
+
+
+
+
+
+
+
+
   async function submitOrder() {
 
-    if (priceChanged) {
+
+    if(priceChanged) {
+
       return;
+
     }
 
 
-    if (
-      !customerName.trim() ||
-      !phone.trim() ||
-      !address.trim() ||
-      !postalCode.trim()
+
+    if(
+      !customerName ||
+      !phone ||
+      !address
     ) {
 
       alert(
@@ -160,103 +223,157 @@ export default function CheckoutPage() {
     }
 
 
+
+
     try {
 
+
       setSending(true);
+
 
 
       const response =
         await fetch(
           "/api/orders",
           {
-            method: "POST",
 
-            headers: {
+            method:
+              "POST",
+
+
+            headers:
+            {
               "Content-Type":
                 "application/json",
             },
 
 
-            body: JSON.stringify({
+            body:
+              JSON.stringify({
 
-              customerName,
+                customerName,
 
-              phone,
+                phone,
 
-              address,
+                address,
 
-              postalCode,
+                goldPrice,
 
-              items:
+                totalPrice:
+                  productsTotal,
 
-                cart.map((item) => ({
 
-                  id:
-                    item.id,
+                items:
 
-                  title:
-                    item.title,
+                  cart.map((item) => {
 
-                  quantity:
-                    item.quantity,
 
-                  goldWeight:
-                    item.goldWeight,
+                    const result =
+                      calculateFinalPrice(
 
-                  goldType:
-                    item.goldType,
+                        item.goldWeight,
 
-                  makingPercent:
-                    item.makingPercent,
+                        goldPrice,
 
-                  profitPercent:
-                    item.profitPercent,
+                        item.makingPercent,
 
-                  taxPercent:
-                    item.taxPercent,
+                        item.profitPercent,
 
-                  designFee:
-                    item.designFee,
+                        item.taxPercent,
 
-                }))
+                        item.designFee
 
-            })
+                      );
+
+
+
+                    return {
+
+                      id:
+                        item.id,
+
+                      title:
+                        item.title,
+
+                      quantity:
+                        item.quantity,
+
+                      goldWeight:
+                        item.goldWeight,
+
+                      goldType:
+                        item.goldType,
+
+                      price:
+                        result.finalPrice,
+
+                    };
+
+
+                  })
+
+              })
 
           }
+
         );
+
+
 
 
       const data =
         await response.json();
 
 
-      if (data.success) {
+
+
+      if(data.success) {
+
 
         clearCart();
+
 
         router.push(
           `/order-success/${data.orderNumber}`
         );
 
+
       }
+
 
 
     } catch(error) {
 
+
       console.error(error);
+
 
       alert(
         "خطا در ثبت سفارش"
       );
 
+
     } finally {
+
 
       setSending(false);
 
+
     }
 
+
   }
+
+
+
+
+
+
+
+
+
   return (
+
     <main
       className="
         min-h-screen
@@ -266,14 +383,16 @@ export default function CheckoutPage() {
 
       <Header />
 
+
       <section
         dir="rtl"
         className="
           px-8
-          pt-40
           pb-24
+          pt-40
         "
       >
+
 
         <div
           className="
@@ -281,6 +400,7 @@ export default function CheckoutPage() {
             max-w-4xl
           "
         >
+
 
           <h1
             className="
@@ -291,6 +411,7 @@ export default function CheckoutPage() {
           >
             ثبت سفارش
           </h1>
+
 
 
 
@@ -310,42 +431,17 @@ export default function CheckoutPage() {
               >
 
                 قیمت طلا تغییر کرده است.
-
                 <br />
 
-                مبلغ سفارش بر اساس قیمت لحظه‌ای جدید محاسبه خواهد شد.
+                مبلغ سفارش دوباره بر اساس قیمت لحظه‌ای محاسبه شد.
 
-
-                <div
-                  className="
-                    mt-4
-                    text-white
-                  "
-                >
-
-                  قیمت جدید:
-
-                  <span
-                    className="
-                      mr-2
-                      text-[#C6A15B]
-                    "
-                  >
-
-                    {
-                      goldPrice.toLocaleString("fa-IR")
-                    }
-
-                    تومان
-
-                  </span>
-
-                </div>
 
               </div>
 
             )
           }
+
+
 
 
 
@@ -364,9 +460,7 @@ export default function CheckoutPage() {
             <input
               value={customerName}
               onChange={(e)=>
-                setCustomerName(
-                  e.target.value
-                )
+                setCustomerName(e.target.value)
               }
               placeholder="نام و نام خانوادگی"
               className="
@@ -386,9 +480,7 @@ export default function CheckoutPage() {
             <input
               value={phone}
               onChange={(e)=>
-                setPhone(
-                  e.target.value
-                )
+                setPhone(e.target.value)
               }
               placeholder="شماره تماس"
               className="
@@ -408,13 +500,10 @@ export default function CheckoutPage() {
             <textarea
               value={address}
               onChange={(e)=>
-                setAddress(
-                  e.target.value
-                )
+                setAddress(e.target.value)
               }
               placeholder="آدرس کامل"
               className="
-                mb-5
                 h-32
                 w-full
                 rounded-2xl
@@ -428,128 +517,151 @@ export default function CheckoutPage() {
 
 
 
-            <input
-              value={postalCode}
-              onChange={(e)=>
-                setPostalCode(
-                  e.target.value
-                )
-              }
-              placeholder="کد پستی"
-              className="
-                mb-8
-                w-full
-                rounded-2xl
-                border
-                border-white/10
-                bg-black/20
-                p-4
-                text-white
-              "
-            />
-
 
 
             <div
               className="
+                mt-8
+                space-y-5
                 border-t
                 border-white/10
                 pt-6
+                text-white/70
               "
             >
 
-              <div
-                className="
-                  mb-6
-                  flex
-                  justify-between
-                  text-white/70
-                "
-              >
+
+              <div className="flex justify-between">
 
                 <span>
-                  تعداد محصولات
+                  تعداد قطعات
                 </span>
 
-                <span>
-                  {
-                    cart.length
-                  }
+
+                <span className="text-[#C6A15B]">
+                  {totalQuantity}
                 </span>
 
               </div>
 
 
 
-              <div
-                className="
-                  mb-8
-                  flex
-                  justify-between
-                  text-xl
-                "
-              >
 
-                <span
-                  className="text-white"
-                >
-                  مبلغ نهایی
+              <div className="flex justify-between">
+
+                <span>
+                  قیمت لحظه‌ای طلا
                 </span>
 
 
-                <span
-                  className="
-                    font-bold
-                    text-[#C6A15B]
-                  "
-                >
+                <span className="text-[#C6A15B]">
 
                   {
                     loading
-                    ? "در حال محاسبه..."
+                    ?
+                    "در حال دریافت..."
                     :
-                    `${Math.round(productsTotal).toLocaleString("fa-IR")} تومان`
+                    goldPrice.toLocaleString("fa-IR")
                   }
+
+                  تومان
+
+                </span>
+
+              </div>
+
+
+
+
+
+              <div
+                className="
+                  flex
+                  justify-between
+                  border-t
+                  border-white/10
+                  pt-5
+                  text-2xl
+                  text-[#C6A15B]
+                "
+              >
+
+                <span>
+                  قیمت نهایی
+                </span>
+
+
+                <span>
+
+                  {productsTotal.toLocaleString("fa-IR")}
+
+                  تومان
 
                 </span>
 
 
               </div>
-              <button
-                onClick={submitOrder}
-                disabled={
-                  sending ||
-                  priceChanged ||
-                  cart.length === 0
-                }
-                className="
-                  w-full
-                  rounded-2xl
-                  bg-[#C6A15B]
-                  py-4
-                  text-lg
-                  font-semibold
-                  text-[#061B1A]
-                  transition
-                  hover:bg-[#E6D2A2]
-                  disabled:cursor-not-allowed
-                  disabled:opacity-50
-                "
-              >
-
-                {
-                  sending
-                  ? "در حال ثبت سفارش..."
-                  : "ثبت سفارش"
-                }
-
-              </button>
 
 
             </div>
 
 
+
+
+
+
+            <button
+              disabled={
+                priceChanged ||
+                sending
+              }
+              onClick={submitOrder}
+              className={`
+                mt-10
+                w-full
+                rounded-full
+                py-4
+
+                ${
+                  priceChanged || sending
+                  ?
+                  "bg-white/20 text-white/40"
+                  :
+                  "bg-[#C6A15B] text-[#061B1A]"
+                }
+              `}
+            >
+
+              {
+                sending
+                ?
+                "در حال ثبت..."
+                :
+                "تایید سفارش"
+              }
+
+            </button>
+
+
+
           </div>
+
+
+
+
+
+          <Link
+            href="/cart"
+            className="
+              mt-8
+              block
+              text-center
+              text-white/50
+            "
+          >
+            بازگشت به سبد خرید
+          </Link>
+
 
 
         </div>
@@ -559,5 +671,7 @@ export default function CheckoutPage() {
 
 
     </main>
+
   );
+
 }

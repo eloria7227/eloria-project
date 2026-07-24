@@ -8,10 +8,10 @@ import {
   ReactNode,
 } from "react";
 
+import { calculateFinalPrice } from "@/lib/priceCalculator";
 
 
 export interface CartItem {
-
 
   id: string;
 
@@ -29,7 +29,6 @@ export interface CartItem {
 
   quantity: number;
 
-
   makingPercent: number;
 
   profitPercent: number;
@@ -38,122 +37,66 @@ export interface CartItem {
 
   designFee: number;
 
-
   goldPriceAtAdd: number;
 
-
 }
-
-
-
-
 
 
 
 interface CartContextType {
 
-
   cart: CartItem[];
-
 
   addToCart: (item: CartItem) => void;
 
-
   removeFromCart: (id: string) => void;
-
 
   increaseQuantity: (id: string) => void;
 
-
   decreaseQuantity: (id: string) => void;
-
 
   updateGoldPrice: (goldPrice: number) => void;
 
-
   clearCart: () => void;
-
-
 
 }
 
 
 
-
-
-
-
 const CartContext =
-
   createContext<CartContextType | undefined>(undefined);
 
 
 
-
-
-
-
-
-
 export function CartProvider({
-
   children,
-
 }: {
-
   children: ReactNode;
-
 }) {
 
 
-
   const [cart, setCart] = useState<CartItem[]>([]);
-
 
   const [loaded, setLoaded] = useState(false);
 
 
 
-
-
-
-
   useEffect(() => {
 
-
-
     const savedCart =
-
-      localStorage.getItem(
-
-        "eloria-cart"
-
-      );
-
-
-
+      localStorage.getItem("eloria-cart");
 
 
     if (savedCart) {
 
-
-
       setCart(
-
         JSON.parse(savedCart)
-
       );
-
-
 
     }
 
 
-
-
-
     setLoaded(true);
-
 
 
   }, []);
@@ -161,44 +104,21 @@ export function CartProvider({
 
 
 
-
-
-
-
-
   useEffect(() => {
 
-
-
-    if (!loaded)
-
-      return;
-
-
-
+    if (!loaded) return;
 
 
     localStorage.setItem(
-
       "eloria-cart",
-
       JSON.stringify(cart)
-
     );
 
 
-
   }, [
-
     cart,
-
-    loaded
-
+    loaded,
   ]);
-
-
-
-
 
 
 
@@ -207,88 +127,64 @@ export function CartProvider({
   function addToCart(item: CartItem) {
 
 
-
     setCart((prev) => {
 
 
-
-      const existing = prev.find(
-
-        (product) =>
-
-          product.id === item.id
-
-      );
-
-
-
+      const existing =
+        prev.find(
+          (product) =>
+            product.id === item.id
+        );
 
 
 
       if (existing) {
 
 
-
-        return prev.map((product) =>
-
+        return prev.map((product) => {
 
 
-          product.id === item.id
+          if (product.id !== item.id) {
 
-            ? {
+            return product;
 
-
-                ...product,
-
-
-                quantity:
-
-                  product.quantity + 1,
-
-
-                goldPriceAtAdd:
-
-                  item.goldPriceAtAdd,
-
-
-              }
-
-
-            : product
+          }
 
 
 
-        );
+          return {
 
+            ...product,
+
+            quantity:
+              product.quantity + 1,
+
+            price:
+              item.price,
+
+            goldPriceAtAdd:
+              item.goldPriceAtAdd,
+
+          };
+
+
+        });
 
 
       }
 
 
 
-
-
-
-
-
       return [
-
         ...prev,
-
-        item
-
+        item,
       ];
-
 
 
     });
 
 
-
   }
-
-
-
 
 
 
@@ -298,29 +194,17 @@ export function CartProvider({
   function removeFromCart(id: string) {
 
 
-
     setCart((prev) =>
 
-
-
       prev.filter(
-
         (item) =>
-
           item.id !== id
-
       )
-
-
 
     );
 
 
-
   }
-
-
-
 
 
 
@@ -330,47 +214,31 @@ export function CartProvider({
   function increaseQuantity(id: string) {
 
 
-
     setCart((prev) =>
 
-
-
       prev.map((item) =>
-
 
 
         item.id === id
 
           ? {
 
-
               ...item,
 
-
               quantity:
-
                 item.quantity + 1,
-
 
             }
 
 
           : item
 
-
-
       )
-
-
 
     );
 
 
-
   }
-
-
-
 
 
 
@@ -380,28 +248,77 @@ export function CartProvider({
   function decreaseQuantity(id: string) {
 
 
-
     setCart((prev) =>
 
+      prev.map((item) => {
+
+
+        if (item.id !== id) {
+
+          return item;
+
+        }
+
+
+
+        if (item.quantity <= 1) {
+
+          return item;
+
+        }
+
+
+
+        return {
+
+          ...item,
+
+          quantity:
+            item.quantity - 1,
+
+        };
+
+
+      })
+
+    );
+
+
+  }
+
+
+
+
+
+
+
+  function updateGoldPrice(
+    goldPrice: number
+  ) {
+
+
+    setCart((prev) =>
 
 
       prev.map((item) => {
 
 
+        const result =
+          calculateFinalPrice(
 
-        if (item.id !== id)
+            item.goldWeight,
 
-          return item;
+            goldPrice,
 
+            item.makingPercent,
 
+            item.profitPercent,
 
+            item.taxPercent,
 
+            item.designFee
 
-        if (item.quantity <= 1)
-
-          return item;
-
-
+          );
 
 
 
@@ -411,66 +328,26 @@ export function CartProvider({
           ...item,
 
 
-          quantity:
+          price:
+            Math.round(
+              result.finalPrice
+            ),
 
-            item.quantity - 1,
+
+          goldPriceAtAdd:
+            goldPrice,
 
 
         };
 
 
-
       })
 
 
-
     );
 
 
-
   }
-
-
-
-
-
-
-
-
-
-  function updateGoldPrice(goldPrice: number) {
-
-
-
-    setCart((prev) =>
-
-
-
-      prev.map((item) => ({
-
-
-
-        ...item,
-
-
-
-        goldPriceAtAdd:
-
-          goldPrice,
-
-
-
-      }))
-
-
-
-    );
-
-
-
-  }
-
-
 
 
 
@@ -480,9 +357,7 @@ export function CartProvider({
 
   function clearCart() {
 
-
     setCart([]);
-
 
   }
 
@@ -492,56 +367,33 @@ export function CartProvider({
 
 
 
-
-
   return (
-
-
 
     <CartContext.Provider
 
-
-
       value={{
-
-
 
         cart,
 
-
         addToCart,
-
 
         removeFromCart,
 
-
         increaseQuantity,
-
 
         decreaseQuantity,
 
-
         updateGoldPrice,
-
 
         clearCart,
 
-
-
       }}
-
-
 
     >
 
-
-
       {children}
 
-
-
     </CartContext.Provider>
-
 
 
   );
@@ -554,38 +406,25 @@ export function CartProvider({
 
 
 
-
-
 export function useCart() {
 
 
-
-  const context = useContext(CartContext);
-
-
+  const context =
+    useContext(CartContext);
 
 
 
   if (!context) {
 
-
-
     throw new Error(
-
       "useCart must be inside CartProvider"
-
     );
-
-
 
   }
 
 
 
-
-
   return context;
-
 
 
 }

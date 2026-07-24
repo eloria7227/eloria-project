@@ -13,13 +13,13 @@ export async function GET() {
     });
 
     return NextResponse.json(products);
+
   } catch (error) {
     console.error("PRODUCT API ERROR:", error);
 
     return NextResponse.json(
       {
-        error: "Failed to fetch products",
-        details:
+        error:
           error instanceof Error
             ? error.message
             : String(error),

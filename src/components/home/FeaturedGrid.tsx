@@ -1,9 +1,32 @@
-"use client";
-
 import FeaturedCard from "./FeaturedCard";
-import { products } from "@/data/products";
+import { prisma } from "@/lib/prisma";
 
-export default function FeaturedGrid() {
+export default async function FeaturedGrid() {
+  const products = await prisma.product.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 6,
+  });
+
+  const formattedProducts = products.map((product) => ({
+    id: product.id,
+    slug: product.slug,
+    title: product.name,
+    image: product.image,
+    description: product.description,
+    goldWeight: product.goldWeight,
+    goldType: product.goldType,
+    stoneType: product.gemstone ?? "بدون سنگ",
+    makingPercent: product.makingPercent,
+    profitPercent: product.profitPercent,
+    taxPercent: product.taxPercent,
+    designFee: product.basePrice,
+  }));
+
   return (
     <div
       className="
@@ -13,7 +36,7 @@ export default function FeaturedGrid() {
         xl:grid-cols-3
       "
     >
-      {products.map((product) => (
+      {formattedProducts.map((product) => (
         <FeaturedCard
           key={product.id}
           product={product}

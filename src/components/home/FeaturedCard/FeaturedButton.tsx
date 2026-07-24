@@ -4,11 +4,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 interface FeaturedButtonProps {
-  id: string;
+  slug: string;
 }
 
 export default function FeaturedButton({
-  id,
+  slug,
 }: FeaturedButtonProps) {
   return (
     <motion.div
@@ -16,7 +16,7 @@ export default function FeaturedButton({
       whileTap={{ scale: 0.98 }}
     >
       <Link
-        href={`/product/${id}`}
+        href={`/product/${slug}`}
         className="
           group
           relative
